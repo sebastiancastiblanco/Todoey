@@ -12,7 +12,7 @@ import UIKit
 
 class ListViewController: UITableViewController {
     
-    let arrayName =  [ "ionic Android", "Udemy iOS", "IMAX Jurasick Park"]
+    var arrayName =  [ "ionic Android", "Udemy iOS", "IMAX Jurasick Park"]
     
     override func viewDidLoad() {
         print("init test")
@@ -33,7 +33,7 @@ class ListViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         // agregar el label
-        cell.textLabel?.text = arrayName[indexPath.row]
+        cell.textLabel?.text = self.arrayName[indexPath.row]
         // retornar el cell
         return cell
         
@@ -54,5 +54,30 @@ class ListViewController: UITableViewController {
         
         
     }
+    
+    //MARK - Add new Items
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        //variable temporal para guardar el inputext
+        var textField = UITextField()
+        // Crear un popup uialert para agregar un elemento
+        let alert = UIAlertController(title: "Add New Todoey Item", message: "Message", preferredStyle: .alert)
+        // Crear boton de accion
+        let action = UIAlertAction(title: "Add item", style: .default) { (action) in
+            print("Success")
+            // validacion de vacio
+            // textField.text ?? "Vacio"
+            self.arrayName.append(textField.text!)
+            self.tableView.reloadData()
+        }
+        
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Create new item"
+            textField = alertTextField
+        }
+        
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+    }
+    
     
 }
