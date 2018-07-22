@@ -13,10 +13,17 @@ import UIKit
 class ListViewController: UITableViewController {
     
     var arrayName =  [ "ionic Android", "Udemy iOS", "IMAX Jurasick Park"]
+    // contenedor de la app para almacenar datos
+    // UsersDefaults method
+    let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         print("init test")
         super.viewDidLoad()
+        
+        if let items = UserDefaults.standard.array(forKey: "TodoListArray") as? [String]{
+            arrayName = items
+        }
         
     }
     
@@ -67,6 +74,8 @@ class ListViewController: UITableViewController {
             // validacion de vacio
             // textField.text ?? "Vacio"
             self.arrayName.append(textField.text!)
+            // guardar en el contendor de la app la lista
+            self.defaults.set(self.arrayName, forKey: "TodoListArray")
             self.tableView.reloadData()
         }
         
