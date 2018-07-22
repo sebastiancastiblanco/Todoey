@@ -12,7 +12,8 @@ import UIKit
 
 class ListViewController: UITableViewController {
     
-    var arrayName =  [ "ionic Android", "Udemy iOS", "IMAX Jurasick Park"]
+    //var arrayName =  [ "ionic Android", "Udemy iOS", "IMAX Jurasick Park"]
+    var arrayName =  [Item]() // inicializar array de objetos
     // contenedor de la app para almacenar datos
     // UsersDefaults method
     let defaults = UserDefaults.standard
@@ -21,7 +22,23 @@ class ListViewController: UITableViewController {
         print("init test")
         super.viewDidLoad()
         
-        if let items = UserDefaults.standard.array(forKey: "TodoListArray") as? [String]{
+        let newItem = Item()
+        newItem.title = "Jaimito App"
+        newItem.check = true
+        let newItem2 = Item()
+        newItem2.title = "Jaimito App 2"
+        newItem2.check = true
+        let newItem3 = Item()
+        newItem3.title = "Jaimito App 3"
+        newItem3.check = true
+        
+        
+        arrayName.append(newItem)
+        arrayName.append(newItem2)
+        arrayName.append(newItem3)
+       
+        
+        if let items = UserDefaults.standard.array(forKey: "TodoListArray") as? [Item]{
             arrayName = items
         }
         
@@ -39,8 +56,14 @@ class ListViewController: UITableViewController {
         // Enlazarse con una tabla y el identificador
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        
+        // actualizar el boolean de la celda cuando se cargue
+        let item =  arrayName[indexPath.row]
+        
+        cell.accessoryType = item.check ? .checkmark : .none
+        
         // agregar el label
-        cell.textLabel?.text = self.arrayName[indexPath.row]
+        cell.textLabel?.text = self.arrayName[indexPath.row].title
         // retornar el cell
         return cell
         
@@ -48,16 +71,24 @@ class ListViewController: UITableViewController {
     
     //MARK - Tableview Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print(indexPath.row)
-        print(arrayName[indexPath.row])
+        
+        // actualizar el valor bool de la lista
+        arrayName[indexPath.row].check = !arrayName[indexPath.row].check
+        // actualizar la lista
+        tableView.reloadData()
         // mostrar un flash para saber cual seleccionamos
         tableView.deselectRow(at: indexPath, animated: true)
+       
+        
+        
+        
+        //--------------------- Solucion 1: con bugs
         // Marca de verificacion, checkbox si ya tiene o no check
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+//        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .none
+//        } else {
+//            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
+//        }
         
         
     }
@@ -73,7 +104,10 @@ class ListViewController: UITableViewController {
             print("Success")
             // validacion de vacio
             // textField.text ?? "Vacio"
-            self.arrayName.append(textField.text!)
+            var item = Item()
+            item.check = false
+            item.title = textField.text!
+            self.arrayName.append(item)
             // guardar en el contendor de la app la lista
             self.defaults.set(self.arrayName, forKey: "TodoListArray")
             self.tableView.reloadData()
