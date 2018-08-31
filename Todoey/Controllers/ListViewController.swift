@@ -20,6 +20,12 @@ class ListViewController: UITableViewController {
     let defaults = UserDefaults.standard
     // Contexto para usar CoreData y para poder salvar datos y persistirlos
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    // varible para guardar la categoria seleccionada, cuando se setea se ejecuta el didSet
+    var selectedCategory : Category? {
+        didSet{
+            loadItems()
+        }
+    }
     
     override func viewDidLoad() {
         print("init test")
@@ -62,21 +68,15 @@ class ListViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        print( arrayName[indexPath.row])
         // Enlazarse con una tabla y el identificador
-        
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
-        
         // actualizar el boolean de la celda cuando se cargue
         let item =  arrayName[indexPath.row]
-        
         cell.accessoryType = item.check ? .checkmark : .none
-        
         // agregar el label
         cell.textLabel?.text = self.arrayName[indexPath.row].title
         // retornar el cell
         return cell
-        
     }
     
     //MARK: - Tableview Delegate Methods
@@ -129,6 +129,8 @@ class ListViewController: UITableViewController {
             let item = Item(context: self.context)
             item.check = false
             item.title = textField.text!
+            item.parentCategory = self.selectedCategory
+            
             self.arrayName.append(item)
             /* // guardar en el contendor de la app la lista
             self.defaults.set(self.arrayName, forKey: "TodoListArray")
@@ -160,9 +162,19 @@ class ListViewController: UITableViewController {
     
     // Recuperar la tabla Items del CoreData se realiza el FetchRequest
     // Se envia por parametro la peticion con la que desea consultar y si envia null, se usa el item.fetchRequest por defecto.
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
         do {
+                // predicate es para hacer condicionales
+               let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@ ", selectedCategory!.name!)
+            
+                if let addPredicate = predicate {
+                    request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, addPredicate])
+                } else {
+                    request.predicate = categoryPredicate
+                }
+            
                 arrayName = try context.fetch(request)
+            
             } catch {
                 print("error fetching database \(error)")
             }
@@ -179,12 +191,12 @@ extension ListViewController: UISearchBarDelegate{
         // crear la peticionxº
         let request : NSFetchRequest<Item> = Item.fetchRequest()
         // agregar un predicate para poder filtrar
-        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        let newPredicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         // organizar los elementos buscados por orden del titulo
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         // solicitar al cargar datos actualizar la tabla con el request creado
         // se hace uso del parametro externo, para que tenga sentido al lerr.
-        loadItems(with: request)
+        loadItems(with: request, predicate: newPredicate)
         
     }
     // Metodo delegado que se ejecuta cuando el texto cambia
